@@ -1,9 +1,7 @@
 //============================================================================
-// Name        : wavmerge.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
+// Name        : wavmerge.cpp for wavs2onewav
+// Author      : shuhei kinukawa
+// Version     : 0.10
 //============================================================================
 
 #include <iostream>
@@ -27,7 +25,7 @@ public:
 
 			bool bOption = false;
 			char topc = argv[i][0];
-			if(topc == '-'/* || topc == '/'*/){
+			if(topc == '-'){
 				bOption = true;
 			}
 			std::string	line = argv[i];
@@ -43,7 +41,7 @@ public:
 class CWavMergeOptionProc : public CArgvProc{
 public:
 	CWavMergeOptionProc(){
-		m_mode = st_none;
+		m_mode = st_src;
 	};
 	virtual ~CWavMergeOptionProc(){};
 
@@ -52,6 +50,8 @@ public:
 		st_none = 0,
 		st_src,
 		st_dst,
+		st_help,
+		st_version,
 	};
 	int m_mode;
 	std::vector<std::string> m_vcsrc;
@@ -60,11 +60,14 @@ public:
 	virtual void Check(const char* line, bool bOption){
 		std::string		s = line;
 		if(bOption){
-			if(s == "i"){
-				m_mode = st_src;
-			}
-			else if(s == "o"){
+			if(s == "o"){
 				m_mode = st_dst;
+			}
+			else if(s == "h"){
+				m_mode = st_help;
+			}
+			else if(s == "v"){
+				m_mode = st_version;
 			}
 			else{
 				m_mode = st_unknown;
@@ -77,6 +80,7 @@ public:
 			}
 			else if(m_mode == st_dst){
 				m_dst = line;
+				m_mode = st_src;
 			}
 		}
 		//std::cout << line << std::endl;
@@ -85,10 +89,26 @@ public:
 };
 
 int main(int argc, char**argv) {
-	std::cout << "WavMerge 1.00" << std::endl;
 
 	CWavMergeOptionProc	cmd;
 	cmd.Parse(argc, argv);
+
+	switch(cmd.m_mode){
+	case CWavMergeOptionProc::st_help:
+	{
+		std::cout <<
+"Usage: wavs2onewav [-o output file] [input file] [input file] ...\n"
+"-o\toutput .wav file name\n"
+;
+
+	}
+	return 0;
+	case CWavMergeOptionProc::st_version:
+	{
+		std::cout << "wavs2onewav 0.10\n";
+	}
+	return 0;
+	}
 
 	std::vector<std::string> & m_vcsrc = cmd.m_vcsrc;
 
@@ -152,8 +172,8 @@ int main(int argc, char**argv) {
 		pSrc = new char[bufsize];
 		pDst = new char[bufsize];
 
+		/*loop for getting samples from input files and puting samples to output file*/
 		uint32_t nWrSmp = 0;
-
 		unsigned int wrsmp = 0;
 		while(nWrSmp < nTotalSmp){
 			memset(pSrc, 0, bufsize);
@@ -191,7 +211,7 @@ int main(int argc, char**argv) {
 
 	}
 	catch(std::exception & e){
-		std::cerr << "catch: "<< e.what() << std::endl;
+		std::cerr << "error: "<< e.what() << std::endl;
 	}
 	delete [] pSrc;
 	delete [] pDst;

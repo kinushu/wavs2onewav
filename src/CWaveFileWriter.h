@@ -2,7 +2,7 @@
  * CWaveFileWriter.h
  *
  *  Created on: 2010/12/02
- *      Author: kinukawa
+ *      Author: shuhei kinukawa
  */
 
 #ifndef CWAVEFILEWRITER_H_

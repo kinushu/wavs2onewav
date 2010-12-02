@@ -2,7 +2,7 @@
  * CWavFileReader.cpp
  *
  *  Created on: 2010/12/01
- *      Author: kinukawa
+ *      Author: shuhei kinukawa
  */
 #include <iostream>
 #include <stdexcept>

@@ -2,7 +2,7 @@
  * CWaveFileWriter.cpp
  *
  *  Created on: 2010/12/02
- *      Author: kinukawa
+ *      Author: shuhei kinukawa
  */
 #include <iostream>
 #include <stdexcept>
@@ -10,12 +10,11 @@
 #include "CWaveFileWriter.h"
 
 CWavFileWriter::CWavFileWriter() {
-	// TODO Auto-generated constructor stub
 
 }
 
 CWavFileWriter::~CWavFileWriter() {
-	// TODO Auto-generated destructor stub
+
 }
 
 int CWavFileWriter::open(const char* file, uint16_t & ch, uint32_t & smprate, uint16_t & bits)
