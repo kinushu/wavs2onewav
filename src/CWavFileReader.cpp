@@ -132,7 +132,11 @@ int CWavFileReader::open(const char* srcfile)
 				m_smptoppos = m_fstrm.tellg();
 			}
 
-			std::streampos nextchunkpos = datapos + (long long)(chunksize + nSizeArea);
+			/*seek to next chunk postion for read*/
+			std::streamoff off = chunksize + nSizeArea;
+			std::streampos nextchunkpos = datapos;
+			nextchunkpos += off;
+//			std::streampos nextchunkpos = datapos + (long long)(chunksize + nSizeArea);
 			m_fstrm.seekg(nextchunkpos, std::ios_base::beg);
 		}
 
