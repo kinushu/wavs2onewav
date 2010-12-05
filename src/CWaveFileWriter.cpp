@@ -88,7 +88,8 @@ void CWavFileWriter::close()
 
 		{
 			const uint32_t datasize = smpbytes;
-			m_fstrm.seekp( m_smptoppos - (long long)sizeof(datasize));
+			std::streamoff off = sizeof(datasize);
+			m_fstrm.seekp( m_smptoppos - off);
 			m_fstrm.write((char*)&datasize, sizeof(datasize));
 		}
 	}
