@@ -45,6 +45,8 @@ int CWavFileReader::open(const char* srcfile)
 	uint32_t smpbytes = 0;
 
 	try{
+		std::string serr;
+
 		m_fstrm.open(srcfile, std::ios::binary);
 		if(m_fstrm.fail()){
 			ret = -1;
@@ -57,6 +59,7 @@ int CWavFileReader::open(const char* srcfile)
 			m_fstrm.read(sRiff, nRiff);
 			if( ::strncmp(sRiff,"RIFF", nRiff) != 0){
 				ret = -2;
+				std::cout << srcfile << " top " << sRiff[0] << sRiff[1] << sRiff[2] << sRiff[3] << std::endl;
 				throw std::logic_error("invalid RIFF");
 			}
 		}
@@ -144,14 +147,14 @@ int CWavFileReader::open(const char* srcfile)
 		m_fstrm.seekg(m_smptoppos, std::ios_base::beg);
 	}
 	catch(std::exception & e){
-		std::cerr << "catch: "<< e.what() << std::endl;
+		std::cerr << "error: "<< e.what() << std::endl;
 		close();
 	}
 
 	if(m_wavfmt.nBlockAlign > 0){
 		m_smpcnt = smpbytes / m_wavfmt.nBlockAlign;
 	}
-	std::cout << "wavopen " << srcfile << " " << ret << std::endl;
+//	std::cout << "wavopen " << srcfile << " " << ret << std::endl;
 
 	return ret;
 }

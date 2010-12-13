@@ -21,7 +21,8 @@ public:
 	virtual void Check(const char* line, bool bOption) = 0;
 
 	void Parse(int argc, char**argv){
-		for(int i=0; i<argc; i++){
+		/*from option*/
+		for(int i=1; i<argc; i++){
 
 			bool bOption = false;
 			char topc = argv[i][0];
@@ -75,7 +76,7 @@ public:
 		}
 		else{
 			if(m_mode == st_src){
-				//std::cout << "push" << std::endl;
+				//std::cout << "push " << line << std::endl;
 				m_vcsrc.push_back(line);
 			}
 			else if(m_mode == st_dst){
@@ -88,39 +89,19 @@ public:
 
 };
 
-int main(int argc, char**argv) {
-
-	CWavMergeOptionProc	cmd;
-	cmd.Parse(argc, argv);
-
-	switch(cmd.m_mode){
-	case CWavMergeOptionProc::st_help:
-	{
-		std::cout <<
-"Usage: wavs2onewav [-o output file] [input file] [input file] ...\n"
-"-o\toutput .wav file name\n"
-;
-
-	}
-	return 0;
-	case CWavMergeOptionProc::st_version:
-	{
-		std::cout << "wavs2onewav 0.10\n";
-	}
-	return 0;
-	}
-
-	std::vector<std::string> & m_vcsrc = cmd.m_vcsrc;
+int mergeWavFiles(const char* outputfile, const std::vector<std::string> & vcsrcfiles )
+{
+	int ret = 0;
 
 	CWavFileReader* paWF = NULL;
 	char* pSrc = NULL;
 	char* pDst = NULL;
 	try{
-		int nCnt = m_vcsrc.size();
+		int nCnt = vcsrcfiles.size();
 		if( nCnt < 2 ){
+			ret = -2;
 			throw std::logic_error("please select larger than 2 input files");
 		}
-		std::vector<std::string> & m_vcsrc = cmd.m_vcsrc;
 		paWF = new CWavFileReader[nCnt];
 
 		uint16_t nTotalCh = 0;
@@ -134,7 +115,10 @@ int main(int argc, char**argv) {
 		/*check input file format and decide output format*/
 		for(int i=0; i < nCnt; i++){
 			CWavFileReader& wf = paWF[i];
-			wf.open(m_vcsrc[i].c_str());
+			if(wf.open(vcsrcfiles[i].c_str()) != 0){
+				ret = -1;
+				throw std::logic_error("can not open file");
+			}
 			const sWaveFormatEx* pwfmt = &wf.m_wavfmt;
 			anCh[i] = pwfmt->nChannels;
 			nTotalCh += pwfmt->nChannels;
@@ -147,9 +131,11 @@ int main(int argc, char**argv) {
 			else{
 				if(nSmpRate != pwfmt->nSamplesPerSec){
 					/*sampling rate converter none*/
+					ret = -3;
 					throw std::logic_error("can not convert sampling rate");
 				}
 				if(pwfmt->wBitsPerSample != nBitsPerSmp){
+					ret = -4;
 					throw std::logic_error("can not convert sampling bits");
 				}
 			}
@@ -159,11 +145,12 @@ int main(int argc, char**argv) {
 
 		/*open output file*/
 		CWavFileWriter	dstWF;
-		std::string	& sDstPath = cmd.m_dst;
+		std::string sDstPath = outputfile;
 		if(	dstWF.open(
 				sDstPath.c_str(), nTotalCh, nSmpRate, nBitsPerSmp)
 			!= 0)
 		{
+			ret = -5;
 			throw std::logic_error("open error dst wav file");
 		}
 
@@ -212,11 +199,40 @@ int main(int argc, char**argv) {
 	}
 	catch(std::exception & e){
 		std::cerr << "error: "<< e.what() << std::endl;
+
+
 	}
 	delete [] pSrc;
 	delete [] pDst;
 
 	delete [] paWF;
 
+	return ret;
+}
+
+int main(int argc, char**argv) {
+
+	CWavMergeOptionProc	cmd;
+	cmd.Parse(argc, argv);
+
+	switch(cmd.m_mode){
+	case CWavMergeOptionProc::st_help:
+	{
+		std::cout <<
+"Usage: wavs2onewav [-o output file] [input file] [input file] ...\n"
+"-o\toutput .wav file name\n"
+;
+
+	}
 	return 0;
+	case CWavMergeOptionProc::st_version:
+	{
+		std::cout << "wavs2onewav 0.10\n";
+	}
+	return 0;
+	}
+
+	int ret = mergeWavFiles(cmd.m_dst.c_str(), cmd.m_vcsrc);
+
+	return ret;
 }
